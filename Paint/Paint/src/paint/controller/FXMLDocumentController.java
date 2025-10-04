@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
 import paint.model.*;
 
 
-public class FXMLDocumentController implements Initializable, DrawingEngine {
+public class FXMLDocumentController implements Initializable {
   
     /***FXML VARIABLES***/
     @FXML
@@ -104,19 +104,12 @@ public class FXMLDocumentController implements Initializable, DrawingEngine {
     private Point2D start;
     private Point2D end;
     
-    //SINGLETON DP
-    private static ArrayList<Shape> shapeList = new ArrayList<Shape>();
-    
     private boolean move=false;
     private boolean copy=false;
     private boolean resize=false;
     private boolean save=false;
     private boolean load=false;
     private boolean importt =false;
-    
-    //MEMENTO DP
-    private Stack primary = new Stack<ArrayList<Shape>>();
-    private Stack secondary = new Stack<ArrayList<Shape>>();
 
 
     
@@ -130,8 +123,11 @@ public class FXMLDocumentController implements Initializable, DrawingEngine {
         Message.setText("");
         if(event.getSource()==DeleteBtn){
             if(!ShapeList.getSelectionModel().isEmpty()){
-            int index = ShapeList.getSelectionModel().getSelectedIndex();
-            removeShape(shapeList.get(index));
+                int index = ShapeList.getSelectionModel().getSelectedIndex();
+                Shape[] shapes = DrawingEngineSingleton.getInstance().getShapes();
+                if (index >= 0 && index < shapes.length) {
+                    DrawingEngineSingleton.getInstance().removeShape(shapes[index]);
+                }
             }else{
                 Message.setText("You need to pick a shape first to delete it.");
             }
@@ -140,8 +136,11 @@ public class FXMLDocumentController implements Initializable, DrawingEngine {
         if(event.getSource()==RecolorBtn){
             if(!ShapeList.getSelectionModel().isEmpty()){
                 int index = ShapeList.getSelectionModel().getSelectedIndex();
-                shapeList.get(index).setFillColor(ColorBox.getValue());
-                refresh(CanvasBox);
+                Shape[] shapes = DrawingEngineSingleton.getInstance().getShapes();
+                if (index >= 0 && index < shapes.length) {
+                    shapes[index].setFillColor(ColorBox.getValue());
+                    DrawingEngineSingleton.getInstance().refresh(CanvasBox);
+                }
             }else{
                 Message.setText("You need to pick a shape first to recolor it.");
             }
@@ -175,13 +174,12 @@ public class FXMLDocumentController implements Initializable, DrawingEngine {
         }
         
         if(event.getSource()==UndoBtn){
-            if(primary.empty()){Message.setText("We are back to zero point! .. Can Undo nothing more!");return;}
-            undo();
+            DrawingEngineSingleton.getInstance().undo();
+            DrawingEngineSingleton.getInstance().refresh(CanvasBox);
         }
-        
         if(event.getSource()==RedoBtn){
-            if(secondary.empty()){Message.setText("There is no more history for me to get .. Go search history books.");return;}
-            redo();
+            DrawingEngineSingleton.getInstance().redo();
+            DrawingEngineSingleton.getInstance().refresh(CanvasBox);
         }
         
         if(event.getSource()==SaveBtn){
@@ -201,9 +199,19 @@ public class FXMLDocumentController implements Initializable, DrawingEngine {
         
         if(event.getSource()==PathBtn){
             if(PathText.getText().isEmpty()){PathText.setText("You need to set the path of the file.");return;}
-            if(save){save=false;save(PathText.getText());}
-            else if(load){load=false;load(PathText.getText());}
-            else if(importt){importt=false;installPluginShape(PathText.getText());}
+            if(save){
+                save=false;
+                DrawingEngineSingleton.getInstance().save(PathText.getText());
+            }
+            else if(load){
+                load=false;
+                DrawingEngineSingleton.getInstance().load(PathText.getText());
+            }
+            else if(importt){
+                importt=false;
+                DrawingEngineSingleton.getInstance().installPluginShape(PathText.getText());
+                Message.setText("Not supported yet.");
+            }
             hidePathPane();
         }
     }
@@ -235,55 +243,64 @@ public class FXMLDocumentController implements Initializable, DrawingEngine {
     
     public void moveFunction(){
         int index = ShapeList.getSelectionModel().getSelectedIndex();
-        shapeList.get(index).setTopLeft(start);
-        refresh(CanvasBox);
+        Shape[] shapes = DrawingEngineSingleton.getInstance().getShapes();
+        if (index >= 0 && index < shapes.length) {
+            shapes[index].setTopLeft(start);
+            DrawingEngineSingleton.getInstance().refresh(CanvasBox);
+        }
     }
     
     public void copyFunction() throws CloneNotSupportedException{
         int index = ShapeList.getSelectionModel().getSelectedIndex();
-        Shape temp = shapeList.get(index).cloneShape();
-        if(temp.equals(null)){System.out.println("Error cloning failed!");}
-        else{
-            shapeList.add(temp);
-            shapeList.get(shapeList.size()-1).setTopLeft(start);
-            refresh(CanvasBox);
+        Shape[] shapes = DrawingEngineSingleton.getInstance().getShapes();
+        if (index >= 0 && index < shapes.length) {
+            Shape temp = shapes[index].cloneShape();
+            if(temp == null){System.out.println("Error cloning failed!");}
+            else{
+                DrawingEngineSingleton.getInstance().addShape(temp);
+                Shape[] newShapes = DrawingEngineSingleton.getInstance().getShapes();
+                newShapes[newShapes.length-1].setTopLeft(start);
+                DrawingEngineSingleton.getInstance().refresh(CanvasBox);
+            }
         }
     }
     
     public void resizeFunction(){
         int index = ShapeList.getSelectionModel().getSelectedIndex();
-        Color c = shapeList.get(index).getFillColor();
-        start = shapeList.get(index).getTopLeft();
-        //Factory DP
-        Shape temp = new ShapeFactory().createShape(shapeList.get(index).getClass().getSimpleName(),start,end,ColorBox.getValue());
-        if(temp.getClass().getSimpleName().equals("Line")){Message.setText("Line doesn't support this command. Sorry :(");return;}
-        shapeList.remove(index);
-        temp.setFillColor(c);
-        shapeList.add(index, temp);
-        refresh(CanvasBox);
-        
+        Shape[] shapes = DrawingEngineSingleton.getInstance().getShapes();
+        if (index >= 0 && index < shapes.length) {
+            Color c = shapes[index].getFillColor();
+            start = shapes[index].getTopLeft();
+            Shape temp = new ShapeFactory().createShape(shapes[index].getClass().getSimpleName(),start,end,ColorBox.getValue());
+            if(temp.getClass().getSimpleName().equals("Line")){
+                Message.setText("Line doesn't support this command. Sorry :(");return;
+            }
+            DrawingEngineSingleton.getInstance().removeShape(shapes[index]);
+            temp.setFillColor(c);
+            DrawingEngineSingleton.getInstance().addShape(temp);
+            DrawingEngineSingleton.getInstance().refresh(CanvasBox);
+        }
     }
     
     public void dragFunction(){
         String type = ShapeBox.getValue();
         Shape sh;
-        //Factory DP
         try{sh = new ShapeFactory().createShape(type,start,end,ColorBox.getValue());}catch(Exception e)
         {Message.setText("Don't be in a hurry! Choose a shape first :'D");return;}
-        addShape(sh);
+        DrawingEngineSingleton.getInstance().addShape(sh);
         sh.draw(CanvasBox);
-        
     }
     
     
     //Observer DP
     public ObservableList getStringList(){
-        ObservableList l = FXCollections.observableArrayList(new ArrayList());
+        ObservableList<String> l = FXCollections.observableArrayList();
+        Shape[] shapes = DrawingEngineSingleton.getInstance().getShapes();
         try{
-        for(int i=0;i<shapeList.size();i++){
-            String temp = shapeList.get(i).getClass().getSimpleName() + "  (" + (int) shapeList.get(i).getTopLeft().getX() + "," + (int) shapeList.get(i).getTopLeft().getY() + ")";
-            l.add(temp);
-        }
+            for(int i=0;i<shapes.length;i++){
+                String temp = shapes[i].getClass().getSimpleName() + "  (" + (int) shapes[i].getTopLeft().getX() + "," + (int) shapes[i].getTopLeft().getY() + ")";
+                l.add(temp);
+            }
         }catch(Exception e){}
         return l;
     }
@@ -299,133 +316,18 @@ public class FXMLDocumentController implements Initializable, DrawingEngine {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        ObservableList shapeList = FXCollections.observableArrayList();
-        shapeList.add("Circle");shapeList.add("Ellipse");shapeList.add("Rectangle");shapeList.add("Square");shapeList.add("Triangle");shapeList.add("Line");
-        ShapeBox.setItems(shapeList);
-        
-        ColorBox.setValue(Color.BLACK);
+    ObservableList<String> shapeList = FXCollections.observableArrayList();
+    shapeList.add("Circle");
+    shapeList.add("Ellipse");
+    shapeList.add("Rectangle");
+    shapeList.add("Square");
+    shapeList.add("Triangle");
+    shapeList.add("Line");
+    ShapeBox.setItems(shapeList);
+    ColorBox.setValue(Color.BLACK);
     }
 
-    @Override
-    public void refresh(Object canvas) {
-        try {
-            primary.push(new ArrayList(cloneList(shapeList)));
-        } catch (CloneNotSupportedException ex) {
-            Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        redraw((Canvas) canvas);
-       ShapeList.setItems((getStringList()));
-    }
-    
-    public void redraw(Canvas canvas){
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, 850, 370);
-        try{
-        for(int i=0;i<shapeList.size();i++){
-            shapeList.get(i).draw(canvas);
-        }
-        }catch(Exception e){}
-    }
-
-    @Override
-    public void addShape(Shape shape) {
-        shapeList.add(shape);
-        refresh(CanvasBox);
-    }
-
-    @Override
-    public void removeShape(Shape shape) {
-        shapeList.remove(shape);
-        refresh(CanvasBox);
-    }
-
-    @Override
-    public void updateShape(Shape oldShape, Shape newShape) {
-        shapeList.remove(oldShape);
-        shapeList.add(newShape);
-        refresh(CanvasBox);
-    }
-
-    @Override
-    public Shape[] getShapes() {
-     return (Shape[]) shapeList.toArray();
-    }
-
-    @Override
-    public void undo() {
-        if(secondary.size()<21){
-        ArrayList temp = (ArrayList) primary.pop();
-        secondary.push(temp);
-        
-        if(primary.empty()){shapeList = new ArrayList();}
-        else{temp = (ArrayList) primary.peek(); shapeList = temp;}
-        
-        redraw(CanvasBox);
-        ShapeList.setItems((getStringList()));
-        }else{Message.setText("Sorry, Cannot do more than 20 Undo's :'(");}
-    }
-
-    @Override
-    public void redo() {
-        ArrayList temp = (ArrayList) secondary.pop();
-        primary.push(temp);
-        
-        temp = (ArrayList) primary.peek();
-        shapeList = temp;
-        
-        redraw(CanvasBox);
-        ShapeList.setItems((getStringList()));
-    }
-
-    @Override
-    public void save(String path) {
-        if(path.substring(path.length()-4).equals(".xml")){
-            SaveToXML x = new SaveToXML(path,shapeList);
-            if(x.checkSuccess()){Message.setText("File Saved Successfully");}
-            else{Message.setText("Error happened while saving, please check the path and try again!");}
-        }
-        else if(path.substring(path.length()-5).equals(".json")){
-            Message.setText("Sorry, Json is not supported :(");
-        }
-        else{Message.setText("Wrong file format .. save to either .xml or .json");}
-  
-    }
-
-    @Override
-    public void load(String path) {
-        if(path.substring(path.length()-4).equals(".xml")){
-            try {
-                LoadFromXML l = new LoadFromXML(path);
-                if(l.checkSuccess()){
-                shapeList = l.getList();
-                refresh(CanvasBox);
-                Message.setText("File loaded successfully");
-                }
-                else{Message.setText("Error loading the file .. check the file path and try again!");}
-            } catch (SAXException ex) {
-                Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ParserConfigurationException ex) {
-                Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
-        }
-        else if(path.substring(path.length()-5).equals(".json")){
-            Message.setText("Sorry, Json is not supported :(");
-        }
-        else{Message.setText("Wrong file format .. load from either .xml or .json");}
-    }
-
-    @Override
-    public List<Class<? extends Shape>> getSupportedShapes() {
-        return null;
-    }
-
-    @Override
-    public void installPluginShape(String jarPath) {
-        Message.setText("Not supported yet.");
-    }
+    // Drawing engine methods removed. Use DrawingEngineSingleton.getInstance() instead.
 
     
     
