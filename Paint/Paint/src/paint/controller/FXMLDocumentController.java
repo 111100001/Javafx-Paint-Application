@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Stack;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
@@ -33,6 +34,7 @@ import paint.model.*;
 
 
 public class FXMLDocumentController implements Initializable {
+    private ShapeFactory shapeFactory = new ShapeFactory();
   
     /***FXML VARIABLES***/
     @FXML
@@ -96,7 +98,7 @@ public class FXMLDocumentController implements Initializable {
     private Label Message;
     
     @FXML
-    private ListView ShapeList;
+    private ListView<String> ShapeList;
     
     
     
@@ -254,9 +256,13 @@ public class FXMLDocumentController implements Initializable {
         int index = ShapeList.getSelectionModel().getSelectedIndex();
         Shape[] shapes = DrawingEngineSingleton.getInstance().getShapes();
         if (index >= 0 && index < shapes.length) {
-            Shape temp = shapes[index].cloneShape();
+            // Use prototype registry for cloning
+            String type = shapes[index].getClass().getSimpleName();
+            Shape temp = shapeFactory.createShapeFromPrototype(type);
             if(temp == null){System.out.println("Error cloning failed!");}
             else{
+                // Optionally copy properties from the original shape
+                temp.setProperties(new HashMap<>(shapes[index].getProperties()));
                 DrawingEngineSingleton.getInstance().addShape(temp);
                 Shape[] newShapes = DrawingEngineSingleton.getInstance().getShapes();
                 newShapes[newShapes.length-1].setTopLeft(start);
@@ -293,7 +299,7 @@ public class FXMLDocumentController implements Initializable {
     
     
     //Observer DP
-    public ObservableList getStringList(){
+    public ObservableList<String> getStringList(){
         ObservableList<String> l = FXCollections.observableArrayList();
         Shape[] shapes = DrawingEngineSingleton.getInstance().getShapes();
         try{

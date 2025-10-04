@@ -9,13 +9,26 @@ import paint.model.*;
 
 //Factory DP
 public class ShapeFactory {
-    
-    public ShapeFactory(){
-        
+    private PrototypeRegistry prototypeRegistry;
+
+    public ShapeFactory() {
+        prototypeRegistry = new PrototypeRegistry();
+        // Register default prototypes
+        prototypeRegistry.registerPrototype("Circle", new Circle());
+        prototypeRegistry.registerPrototype("Ellipse", new Ellipse());
+        prototypeRegistry.registerPrototype("Rectangle", new Rectangle());
+        prototypeRegistry.registerPrototype("Square", new Square());
+        prototypeRegistry.registerPrototype("Line", new Line());
+        prototypeRegistry.registerPrototype("Triangle", new Triangle());
     }
-    
-    public Shape createShape(String type, Point2D start, Point2D end, Color color){
-        Shape temp=null;
+
+    // Create by cloning prototype and setting properties
+    public Shape createShapeFromPrototype(String type) throws CloneNotSupportedException {
+        return prototypeRegistry.getPrototype(type);
+    }
+
+    public Shape createShape(String type, Point2D start, Point2D end, Color color) {
+        Shape temp = null;
         switch(type){
             case"Circle": temp = new Circle(start,end,color);break;
             case"Ellipse": temp = new Ellipse(start,end,color);break;
@@ -26,9 +39,9 @@ public class ShapeFactory {
         }
         return temp;
     }
-    
-    public Shape createShape(String type, HashMap<String,Double> m){
-        Shape temp=null;
+
+    public Shape createShape(String type, HashMap<String,Double> m) {
+        Shape temp = null;
         switch(type){
             case"Circle": temp = new Circle();break;
             case"Ellipse": temp = new Ellipse();break;
@@ -39,5 +52,9 @@ public class ShapeFactory {
         }
         temp.setProperties(m);
         return temp;
+    }
+
+    public void registerPrototype(String type, Shape prototype) {
+        prototypeRegistry.registerPrototype(type, prototype);
     }
 }
