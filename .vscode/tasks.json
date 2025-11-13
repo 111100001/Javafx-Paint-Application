@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run JavaFX Application",
+			"type": "shell",
+			"command": "\"C:\\Program Files\\Java\\jdk-21\\bin\\java.exe\" --module-path \"c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\" --add-modules javafx.controls,javafx.fxml -cp Paint/Paint/build paint.Paint",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

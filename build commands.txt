@@ -1,0 +1,5 @@
+1: buid: "C:\Program Files\Java\jdk-21\bin\javac.exe" --module-path "c:\Users\fqf1f\OneDrive\college\9th-semester\swDesignPatterns\designPatternsProject\javafx-sdk-21.0.8\lib" --add-modules javafx.controls,javafx.fxml -d Paint/Paint/build Paint/Paint/src/paint/Paint.java Paint/Paint/src/paint/controller/*.java Paint/Paint/src/paint/model/*.java
+
+2: move the view folder to the build folder with the gui
+
+3: run:  "C:\Program Files\Java\jdk-21\bin\java.exe" --module-path "c:\Users\fqf1f\OneDrive\college\9th-semester\swDesignPatterns\designPatternsProject\javafx-sdk-21.0.8\lib" --add-modules javafx.controls,javafx.fxml -cp Paint/Paint/build paint.Paint

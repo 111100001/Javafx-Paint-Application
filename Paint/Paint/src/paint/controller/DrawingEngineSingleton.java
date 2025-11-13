@@ -33,20 +33,17 @@ public class DrawingEngineSingleton implements DrawingEngine {
     @Override
     public void addShape(Shape shape) {
         shapeList.add(shape);
-        // Optionally call refresh
     }
 
     @Override
     public void removeShape(Shape shape) {
         shapeList.remove(shape);
-        // Optionally call refresh
     }
 
     @Override
     public void updateShape(Shape oldShape, Shape newShape) {
         shapeList.remove(oldShape);
         shapeList.add(newShape);
-        // Optionally call refresh
     }
 
     @Override

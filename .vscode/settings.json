@@ -1,0 +1,15 @@
+{
+    "java.project.sourcePaths": [
+        "Paint\\Paint\\src"
+    ],
+    "java.project.referencedLibraries": [
+        "c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\\javafx.base.jar",
+        "c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\\javafx.controls.jar",
+        "c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\\javafx.fxml.jar",
+        "c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\\javafx.graphics.jar",
+        "c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\\javafx.media.jar",
+        "c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\\javafx.swing.jar",
+        "c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\\javafx.web.jar",
+        "c:\\Users\\fqf1f\\OneDrive\\college\\9th-semester\\swDesignPatterns\\designPatternsProject\\javafx-sdk-21.0.8\\lib\\javafx-swt.jar"
+    ]
+}
